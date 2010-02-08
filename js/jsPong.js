@@ -5,40 +5,55 @@
 
 var jsPong = {
 
-	stage: null,
-	stageH: null,
-	stageW: null,
-	b: document.createElement("div"),
+	stage: {
+		object: null,
+		height: null,
+		width: null
+	},
+	
+	ball: {
+		sprite: null,
+		x: null,
+		y: null,
+		speed: {
+			x: null,
+			y: null
+		}
+	},
 
-	bX: null,
-	bY: null,
-	bXS: null,
-	bYS: null,
 	vIsPause: false,
 	kLeft: false,
 	kRight: false,
 
 	grid: 20,
 	pW: 150,
-
-	p1: null,
-	p1X: null,
-	p1Y: null,
-	p1S: null,
-
-	p2: null,
-	p2X: null,
-	p2Y: null,
-	p2S: null,
+	
+	human: {
+		sprite: null,
+		x: null,
+		y: null,
+		score: null,
+		scoreboard: null
+	},
+	
+	computer: {
+		sprite: null,
+		x: null,
+		y: null,
+		score: null,
+		scoreboard: null
+	},
 	
 	intMainLoop: 0,
 	
+	/*
+	** fmt00 tags leading zero to numbers 0-9 (-> 00-09)
+	** @see #start
+	** @param number to convert
+	** @return {string} number with leading zero
+	*/
 	fmt00: function (XtoFormat){
- 		/*
- 		** fmt00 tags leading zero to numbers 0-9 (-> 00-09)
-		** @param number to convert
-		** @return {string} number with leading zero
-		*/
+ 		
  		if (parseInt(XtoFormat) < 0) var neg = true;
  		
 		if (Math.abs(parseInt(XtoFormat)) < 10){
@@ -48,79 +63,78 @@ var jsPong = {
 		return XtoFormat;
 	},
 	
-	fnInit: function (){
+	init: function (){
 		//Stage
-		jsPong.stage = document.getElementById('stage');
-		jsPong.stageH = document.getElementById('stage').offsetHeight-jsPong.grid;
-		jsPong.stageW = document.getElementById('stage').offsetWidth-jsPong.grid;
+		jsPong.stage.object = document.getElementById('stage');
+		jsPong.stage.height = jsPong.stage.object.offsetHeight-jsPong.grid;
+		jsPong.stage.width = jsPong.stage.object.offsetWidth-jsPong.grid;
 	
-		jsPong.p1X = jsPong.stageW / 2;
-		jsPong.p1Y = jsPong.stageH;
-		jsPong.p1S = 0;
-		jsPong.p2X = jsPong.stageW / 2;
-		jsPong.p2Y = 0;
-		jsPong.p2S = 0;
+		jsPong.human.x = jsPong.stage.width / 2;
+		jsPong.human.y = jsPong.stage.height;
+		jsPong.human.score = 0;
+		jsPong.computer.x = jsPong.stage.width / 2;
+		jsPong.computer.y = 0;
+		jsPong.computer.score = 0;
 	
-		//Ball
-		jsPong.b = document.createElement("div");
-		jsPong.b.style['position'] = 'absolute';
-		jsPong.b.style['background'] = 'white';
-		jsPong.b.style['left'] = jsPong.stageW / 2 + 'px';
-		jsPong.b.style['top'] = jsPong.stageH / 2 + 'px';	
-		jsPong.b.style['width'] = jsPong.grid + 'px';
-		jsPong.b.style['height'] = jsPong.grid + 'px';
-		jsPong.b.style['z-index'] = '15';
+		/* Create and Style Ball-Sprite */
+		jsPong.ball.sprite = document.createElement("div");
+		jsPong.ball.sprite.style['position'] = 'absolute';
+		jsPong.ball.sprite.style['background'] = 'white';
+		jsPong.ball.sprite.style['left'] = jsPong.stage.width / 2 + 'px';
+		jsPong.ball.sprite.style['top'] = jsPong.stage.height / 2 + 'px';	
+		jsPong.ball.sprite.style['width'] = jsPong.grid + 'px';
+		jsPong.ball.sprite.style['height'] = jsPong.grid + 'px';
+		jsPong.ball.sprite.style['z-index'] = '15';
 	
-		//Player1 (Human)
-		jsPong.p1 = document.createElement("div");
-		jsPong.p1.style['position'] = 'absolute';
-		jsPong.p1.style['background'] = 'white';
-		jsPong.p1.style['left'] = jsPong.p1X + 'px';
-		jsPong.p1.style['top'] = jsPong.p1Y + 'px';	
-		jsPong.p1.style['width'] = jsPong.pW + 'px';
-		jsPong.p1.style['height'] = jsPong.grid + 'px';
-		jsPong.p1.style['z-index'] = '15';
+		/* Create and Style Racket of Human Player */
+		jsPong.human.sprite = document.createElement("div");
+		jsPong.human.sprite.style['position'] = 'absolute';
+		jsPong.human.sprite.style['background'] = 'white';
+		jsPong.human.sprite.style['left'] = jsPong.human.x + 'px';
+		jsPong.human.sprite.style['top'] = jsPong.human.y + 'px';	
+		jsPong.human.sprite.style['width'] = jsPong.pW + 'px';
+		jsPong.human.sprite.style['height'] = jsPong.grid + 'px';
+		jsPong.human.sprite.style['z-index'] = '15';
 	
-		//Player1 ScoreBoard
-		jsPong.p1s = document.createElement("div");
-		jsPong.p1s.style['position'] = 'absolute'; 
-		jsPong.p1s.style['right'] = '0px';
-		jsPong.p1s.style['bottom'] = '23px';	
-		jsPong.p1s.className = 'scoreboard';
-		jsPong.p1s.id = 'p1s';
+		/* Create and Style Scoreboard of Human Player */
+		jsPong.human.scoreboard = document.createElement("div");
+		jsPong.human.scoreboard.style['position'] = 'absolute'; 
+		jsPong.human.scoreboard.style['right'] = '0px';
+		jsPong.human.scoreboard.style['bottom'] = '23px';	
+		jsPong.human.scoreboard.className = 'scoreboard';
+		jsPong.human.scoreboard.id = 'human_scoreboard';
 		
-		//Player2 (Computer)
-		jsPong.p2 = document.createElement("div");
-		jsPong.p2.style['position'] = 'absolute';
-		jsPong.p2.style['background'] = 'white';
-		jsPong.p2.style['left'] = jsPong.p2X + 'px';
-		jsPong.p2.style['top'] = jsPong.p2Y + 'px';	
-		jsPong.p2.style['width'] = jsPong.pW + 'px';
-		jsPong.p2.style['height'] = jsPong.grid + 'px';
-		jsPong.p2.style['z-index'] = '15';
+		/* Create and Style Racket of Computer Player */
+		jsPong.computer.sprite = document.createElement("div");
+		jsPong.computer.sprite.style['position'] = 'absolute';
+		jsPong.computer.sprite.style['background'] = 'white';
+		jsPong.computer.sprite.style['left'] = jsPong.computer.x + 'px';
+		jsPong.computer.sprite.style['top'] = jsPong.computer.y + 'px';	
+		jsPong.computer.sprite.style['width'] = jsPong.pW + 'px';
+		jsPong.computer.sprite.style['height'] = jsPong.grid + 'px';
+		jsPong.computer.sprite.style['z-index'] = '15';
 	
-		//Player2 ScoreBoard
-		jsPong.p2s = document.createElement("div");
-		jsPong.p2s.style['position'] = 'absolute'; 
-		jsPong.p2s.style['left'] = '0px';
-		jsPong.p2s.style['top'] = '28px';	
-		jsPong.p2s.className = 'scoreboard';
-		jsPong.p2s.id = 'p2s';
+		/* Create and Style Scoreboard of Computer Player */
+		jsPong.computer.scoreboard = document.createElement("div");
+		jsPong.computer.scoreboard.style['position'] = 'absolute'; 
+		jsPong.computer.scoreboard.style['left'] = '0px';
+		jsPong.computer.scoreboard.style['top'] = '28px';	
+		jsPong.computer.scoreboard.className = 'scoreboard';
+		jsPong.computer.scoreboard.id = 'computer_scoreboard';
 		
-		//Addchild
-		jsPong.stage.appendChild(jsPong.b);
-		jsPong.stage.appendChild(jsPong.p1);
-		jsPong.stage.appendChild(jsPong.p2);
-		jsPong.stage.appendChild(jsPong.p1s);
-		jsPong.stage.appendChild(jsPong.p2s);
+		/* Add all sprites to stage */
+		jsPong.stage.object.appendChild(jsPong.ball.sprite);
+		jsPong.stage.object.appendChild(jsPong.human.sprite);
+		jsPong.stage.object.appendChild(jsPong.computer.sprite);
+		jsPong.stage.object.appendChild(jsPong.human.scoreboard);
+		jsPong.stage.object.appendChild(jsPong.computer.scoreboard);
 	
 		//Event Listener
 		window.document.onkeydown = jsPong.oKeyDown;
 		window.document.onkeyup = jsPong.oKeyUp;
-		jsPong.intMainLoop = setInterval(jsPong.fnLoop, 50);	
-		jsPong.fnStart();
-	}, /* fnInit() */
-
+		jsPong.intMainLoop = setInterval(jsPong.loop, 50);	
+		jsPong.start();
+	}, /* init() */
 
 	oKeyDown: function (e){
 		var ev = e ? e.keyCode : event.keyCode  
@@ -129,12 +143,12 @@ var jsPong = {
 			else if(ev == 80 || ev == 27){ //letter p, spacebar=32
 				if(jsPong.vIsPause === false) {
 					jsPong.vIsPause = true;
-					jsPong.p1.style['background'] = jsPong.p2.style['background'] = jsPong.b.style['background'] = 'gray';
+					jsPong.human.sprite.style['background'] = jsPong.computer.sprite.style['background'] = jsPong.ball.sprite.style['background'] = 'gray';
 					getElementById('game_menu').style.visibility='visible';
 				}
 				else {
 					jsPong.vIsPause = false;
-					jsPong.p1.style['background'] = jsPong.p2.style['background'] = jsPong.b.style['background'] = 'white';
+					jsPong.human.sprite.style['background'] = jsPong.computer.sprite.style['background'] = jsPong.ball.sprite.style['background'] = 'white';
 					getElementById('game_menu').style.visibility='hidden';
 				}
 			}
@@ -145,48 +159,46 @@ var jsPong = {
 		jsPong.kRight = false;
 	},
 
-	fnStart: function (){
-		//document.getElementById('ui').innerHTML = 'JAVASCRIPT PONG | YOU:' + fmt00(p1S) + ' COMPUTER:' + fmt00(p2S);
-		document.getElementById('p1s').innerHTML = jsPong.fmt00(jsPong.p1S);
-		document.getElementById('p2s').innerHTML = jsPong.fmt00(jsPong.p2S);
-		jsPong.bX = Math.random() *(jsPong.stageW - jsPong.grid);
-		jsPong.bY = jsPong.stageH / 2;
-		if(jsPong.p1S > jsPong.p2S) { 
-			jsPong.bXS = 3;
-			jsPong.bYS = 3;
+	start: function (){
+		jsPong.human.scoreboard.innerHTML = jsPong.fmt00(jsPong.human.score);
+		jsPong.computer.scoreboard.innerHTML = jsPong.fmt00(jsPong.computer.score);
+		jsPong.ball.x = Math.random() *(jsPong.stage.width - jsPong.grid);
+		jsPong.ball.y = jsPong.stage.height / 2;
+		if(jsPong.human.score > jsPong.computer.score) { 
+			jsPong.ball.speed.x = 3;
+			jsPong.ball.speed.y = 3;
 		} else { 
-			jsPong.bXS = -3;
-			jsPong.bYS = -3;
+			jsPong.ball.speed.x = -3;
+			jsPong.ball.speed.y = -3;
 		}
 	},
 
-
-	fnLoop: function (){
+	loop: function (){
 		if(!jsPong.vIsPause){
 
 			//Someone scores
-			if(jsPong.bY > jsPong.stageH){ jsPong.p2S++; jsPong.fnStart(); }
-			if(jsPong.bY < 0){ jsPong.p1S++; jsPong.fnStart(); } 
+			if(jsPong.ball.y > jsPong.stage.height){ jsPong.computer.score++; jsPong.start(); }
+			if(jsPong.ball.y < 0){ jsPong.human.score++; jsPong.start(); } 
 	
 			//Collision - Boundary 
-			if(jsPong.bX > jsPong.stageW || jsPong.bX < 0){ jsPong.bXS *= -1; } 
+			if(jsPong.ball.x > jsPong.stage.width || jsPong.ball.x < 0){ jsPong.ball.speed.x *= -1; } 
 	
 			//Collision - Players
-			if((jsPong.bY > jsPong.p1Y-jsPong.grid && jsPong.bX > jsPong.p1X && jsPong.bX < jsPong.p1X+jsPong.pW)||(jsPong.bY < jsPong.grid && jsPong.bX > jsPong.p2X && jsPong.bX < jsPong.p2X+jsPong.pW)){jsPong.bYS *= -1.1; jsPong.bXS *= 1.1;}
+			if((jsPong.ball.y > jsPong.human.y-jsPong.grid && jsPong.ball.x > jsPong.human.x && jsPong.ball.x < jsPong.human.x+jsPong.pW)||(jsPong.ball.y < jsPong.grid && jsPong.ball.x > jsPong.computer.x && jsPong.ball.x < jsPong.computer.x+jsPong.pW)){jsPong.ball.speed.y *= -1.1; jsPong.ball.speed.x *= 1.1;}
 	
 			//Move ball
-			jsPong.bX+=jsPong.bXS; jsPong.bY+=jsPong.bYS;	
-			jsPong.b.style['left'] = jsPong.bX + 'px';
-			jsPong.b.style['top'] = jsPong.bY + 'px';
+			jsPong.ball.x+=jsPong.ball.speed.x; jsPong.ball.y+=jsPong.ball.speed.y;	
+			jsPong.ball.sprite.style['left'] = jsPong.ball.x + 'px';
+			jsPong.ball.sprite.style['top'] = jsPong.ball.y + 'px';
 	
 			//Move Player1
-			if(jsPong.kLeft && jsPong.p1X > 0){ jsPong.p1X-=5; } else if (jsPong.kRight && jsPong.p1X+jsPong.pW-jsPong.grid < jsPong.stageW){ jsPong.p1X+=5;}
-			jsPong.p1.style['left'] = jsPong.p1X + 'px';
+			if(jsPong.kLeft && jsPong.human.x > 0){ jsPong.human.x-=5; } else if (jsPong.kRight && jsPong.human.x+jsPong.pW-jsPong.grid < jsPong.stage.width){ jsPong.human.x+=5;}
+			jsPong.human.sprite.style['left'] = jsPong.human.x + 'px';
 	
 			//Move Player2
-			if(jsPong.bX > jsPong.p2X+jsPong.pW){ jsPong.p2X+=5; } else if(jsPong.bX < jsPong.p2X){ jsPong.p2X-=5; }
-			jsPong.p2.style['left'] = jsPong.p2X + 'px';
+			if(jsPong.ball.x > jsPong.computer.x+jsPong.pW){ jsPong.computer.x+=5; } else if(jsPong.ball.x < jsPong.computer.x){ jsPong.computer.x-=5; }
+			jsPong.computer.sprite.style['left'] = jsPong.computer.x + 'px';
 		}
-	}
+	} /* fnLoop() */
 
 } /* End jsPong */
