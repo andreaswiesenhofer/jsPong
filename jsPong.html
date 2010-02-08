@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+
+	<title>Pong</title>
+	
+	<script type="text/javascript" src="js/jsPong.js"></script>
+	
+	<style>
+		body {
+			overflow:hidden;
+		}
+		
+		#stage {
+			position:absolute;
+			top:0px;
+			left:0px;
+			height:100%;
+			width:100%;
+			background:black;
+			z-index:13;
+		}
+		
+		#game_menu {
+			visibility: hidden;
+			z-index:16;
+		}
+		
+		#game_menu a {
+			color:white;
+		}
+		
+		.scoreboard {
+			color:gray;
+			font-size: 42px;
+			z-index: 14;
+		}
+	</style>
+	
+</head>
+<body onload="fnInit();">
+	
+	<div id="stage" style="">
+		<div id="game_menu">
+			<a href="#" onClick="intMainLoop=clearInterval(intMainLoop);">Reset Game</a>
+		</div>
+	</div>
+</body>
+</html>
