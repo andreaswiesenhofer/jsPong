@@ -4,7 +4,7 @@
 
 	<title>Pong</title>
 	
-	<script type="text/javascript" src="js/jsPong.js"></script>
+	
 	
 	<style>
 		body {
@@ -36,14 +36,20 @@
 			z-index: 14;
 		}
 	</style>
-	
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3/jquery.min.js"></script>
 </head>
-<body onload="fnInit();">
+<body>
 	
 	<div id="stage" style="">
 		<div id="game_menu">
-			<a href="#" onClick="intMainLoop=clearInterval(intMainLoop);">Reset Game</a>
+			<a href="#" onClick="jsPong.intMainLoop=clearInterval(jsPong.intMainLoop);">Reset Game</a>
 		</div>
 	</div>
+	<script type="text/javascript" src="js/jsPong.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function() {
+		    jsPong.fnInit();
+		});
+	</script>
 </body>
 </html>

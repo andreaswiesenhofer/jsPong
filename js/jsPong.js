@@ -1,172 +1,192 @@
-// Javascript Pong
-var stage;
-var stageH;
-var stageW;
-var b;
+/*
+** jsPong - JavaScipt Pong
+** @author Andreas Wiesenhofer <awiesi@gmail.com>
+*/
 
-var bX;
-var bY;
-var bXS;
-var bYS;
-var vIsPause = false;
-var kLeft = false;
-var kRight = false;
+var jsPong = {
 
-var grid = 20;
-var pW = 150;
+	stage: null,
+	stageH: null,
+	stageW: null,
+	b: document.createElement("div"),
 
-var p1;
-var p1X;
-var p1Y;
-var p1S;
+	bX: null,
+	bY: null,
+	bXS: null,
+	bYS: null,
+	vIsPause: false,
+	kLeft: false,
+	kRight: false,
 
-var p2;
-var p2X;
-var p2Y;
-var p2S;
+	grid: 20,
+	pW: 150,
 
-function fmt00(XtoFormat){
- // fmt00: Tags leading zero onto numbers 0 - 9.
- // Particularly useful for displaying results from Date methods.
- //
- if (parseInt(XtoFormat) < 0) var neg = true;
- if (Math.abs(parseInt(XtoFormat)) < 10){
-  XtoFormat = "0"+ Math.abs(XtoFormat);
- }
- if (neg) XtoFormat = "-"+XtoFormat;
- return XtoFormat;
-}
+	p1: null,
+	p1X: null,
+	p1Y: null,
+	p1S: null,
 
-function fnInit(){
-	//Stage
-	stage = document.getElementById('stage');
-	stageH = document.getElementById('stage').offsetHeight-grid;
-	stageW = document.getElementById('stage').offsetWidth-grid;
+	p2: null,
+	p2X: null,
+	p2Y: null,
+	p2S: null,
 	
-	p1X = stageW / 2;
-	p1Y = stageH;
-	p1S = 0;
-	p2X = stageW / 2;
-	p2Y = 0;
-	p2S = 0;
+	intMainLoop: 0,
 	
-	//Ball
-	b = document.createElement("div");
-	b.style['position'] = 'absolute';
-	b.style['background'] = 'white'; //'url(bola.gif)';
-	b.style['left'] = stageW / 2 + 'px';
-	b.style['top'] = stageH / 2 + 'px';	
-	b.style['width'] = grid + 'px';
-	b.style['height'] = grid + 'px';
-	b.style['z-index'] = '15';
+	fmt00: function (XtoFormat){
+ 		/*
+ 		** fmt00 tags leading zero to numbers 0-9 (-> 00-09)
+		** @param number to convert
+		** @return {string} number with leading zero
+		*/
+ 		if (parseInt(XtoFormat) < 0) var neg = true;
+ 		
+		if (Math.abs(parseInt(XtoFormat)) < 10){
+			XtoFormat = "0"+ Math.abs(XtoFormat);
+		}
+		if (neg) XtoFormat = "-"+XtoFormat;
+		return XtoFormat;
+	},
 	
-	//Player1 (Human)
-	p1 = document.createElement("div");
-	p1.style['position'] = 'absolute';
-	p1.style['background'] = 'white'; //'url(p1.gif)';
-	p1.style['left'] = p1X + 'px';
-	p1.style['top'] = p1Y + 'px';	
-	p1.style['width'] = pW + 'px';
-	p1.style['height'] = grid + 'px';
-	p1.style['z-index'] = '15';
+	fnInit: function (){
+		//Stage
+		jsPong.stage = document.getElementById('stage');
+		jsPong.stageH = document.getElementById('stage').offsetHeight-jsPong.grid;
+		jsPong.stageW = document.getElementById('stage').offsetWidth-jsPong.grid;
 	
-	//Player1 ScoreBoard
-	p1s = document.createElement("div");
-	p1s.style['position'] = 'absolute'; 
-	p1s.style['right'] = '0px';
-	p1s.style['bottom'] = '23px';	
-	p1s.className = 'scoreboard';
-	p1s.id = 'p1s';
+		jsPong.p1X = jsPong.stageW / 2;
+		jsPong.p1Y = jsPong.stageH;
+		jsPong.p1S = 0;
+		jsPong.p2X = jsPong.stageW / 2;
+		jsPong.p2Y = 0;
+		jsPong.p2S = 0;
 	
+		//Ball
+		jsPong.b = document.createElement("div");
+		jsPong.b.style['position'] = 'absolute';
+		jsPong.b.style['background'] = 'white';
+		jsPong.b.style['left'] = jsPong.stageW / 2 + 'px';
+		jsPong.b.style['top'] = jsPong.stageH / 2 + 'px';	
+		jsPong.b.style['width'] = jsPong.grid + 'px';
+		jsPong.b.style['height'] = jsPong.grid + 'px';
+		jsPong.b.style['z-index'] = '15';
 	
-	//Player2 (Computer)
-	p2 = document.createElement("div");
-	p2.style['position'] = 'absolute';
-	p2.style['background'] = 'white'; //'url(p1.gif)';
-	p2.style['left'] = p2X + 'px';
-	p2.style['top'] = p2Y + 'px';	
-	p2.style['width'] = pW + 'px';
-	p2.style['height'] = grid + 'px';
-	p2.style['z-index'] = '15';
+		//Player1 (Human)
+		jsPong.p1 = document.createElement("div");
+		jsPong.p1.style['position'] = 'absolute';
+		jsPong.p1.style['background'] = 'white';
+		jsPong.p1.style['left'] = jsPong.p1X + 'px';
+		jsPong.p1.style['top'] = jsPong.p1Y + 'px';	
+		jsPong.p1.style['width'] = jsPong.pW + 'px';
+		jsPong.p1.style['height'] = jsPong.grid + 'px';
+		jsPong.p1.style['z-index'] = '15';
 	
-	//Player2 ScoreBoard
-	p2s = document.createElement("div");
-	p2s.style['position'] = 'absolute'; 
-	p2s.style['left'] = '0px';
-	p2s.style['top'] = '28px';	
-	p2s.className = 'scoreboard';
-	p2s.id = 'p2s';
+		//Player1 ScoreBoard
+		jsPong.p1s = document.createElement("div");
+		jsPong.p1s.style['position'] = 'absolute'; 
+		jsPong.p1s.style['right'] = '0px';
+		jsPong.p1s.style['bottom'] = '23px';	
+		jsPong.p1s.className = 'scoreboard';
+		jsPong.p1s.id = 'p1s';
 		
-	//Addchild
-	stage.appendChild(b);
-	stage.appendChild(p1);
-	stage.appendChild(p2);
-	stage.appendChild(p1s);
-	stage.appendChild(p2s);
+		//Player2 (Computer)
+		jsPong.p2 = document.createElement("div");
+		jsPong.p2.style['position'] = 'absolute';
+		jsPong.p2.style['background'] = 'white';
+		jsPong.p2.style['left'] = jsPong.p2X + 'px';
+		jsPong.p2.style['top'] = jsPong.p2Y + 'px';	
+		jsPong.p2.style['width'] = jsPong.pW + 'px';
+		jsPong.p2.style['height'] = jsPong.grid + 'px';
+		jsPong.p2.style['z-index'] = '15';
 	
-	//Event Listener
-	window.document.onkeydown = oKeyDown;
-	window.document.onkeyup = oKeyUp;
-	var intMainLoop = 0;
-	intMainLoop = setInterval(fnLoop, 50);	
-	fnStart();
-}
-
-
-function oKeyDown(e){
-	var ev = e ? e.keyCode : event.keyCode  
-	if(ev == 37){ kLeft = true;	}
-		else if(ev == 39){ kRight = true;	}
-		else if(ev == 80 || ev == 27){ //letter p, spacebar=32
-							if(vIsPause === false) {
-								vIsPause = true;p1.style['background'] = p2.style['background'] = b.style['background'] = 'gray';
-								getElementById('game_menu').style.visibility='visible';
-							}
-							else {
-								vIsPause = false;p1.style['background'] = p2.style['background'] = b.style['background'] = 'white';
-								getElementById('game_menu').style.visibility='hidden';
-							}
-						}
-}
-
-function oKeyUp(e){
-	kLeft = false;	kRight = false;
-}
-
-function fnStart(){
-	//document.getElementById('ui').innerHTML = 'JAVASCRIPT PONG | YOU:' + fmt00(p1S) + ' COMPUTER:' + fmt00(p2S);
-	document.getElementById('p1s').innerHTML = fmt00(p1S);
-	document.getElementById('p2s').innerHTML = fmt00(p2S);
-	bX = Math.random() *(stageW - grid);
-	bY = stageH / 2;
-	if(p1S > p2S) { bXS = 3; bYS = 3 } else { bXS = -3; bYS = -3;}
-}
-
-
-function fnLoop(){
-if(!vIsPause){
-
-	//Someone scores
-	if(bY > stageH){ p2S++; fnStart(); }
-	if(bY < 0){ p1S++; fnStart(); } 
+		//Player2 ScoreBoard
+		jsPong.p2s = document.createElement("div");
+		jsPong.p2s.style['position'] = 'absolute'; 
+		jsPong.p2s.style['left'] = '0px';
+		jsPong.p2s.style['top'] = '28px';	
+		jsPong.p2s.className = 'scoreboard';
+		jsPong.p2s.id = 'p2s';
+		
+		//Addchild
+		jsPong.stage.appendChild(jsPong.b);
+		jsPong.stage.appendChild(jsPong.p1);
+		jsPong.stage.appendChild(jsPong.p2);
+		jsPong.stage.appendChild(jsPong.p1s);
+		jsPong.stage.appendChild(jsPong.p2s);
 	
-	//Collision - Boundary 
-	if(bX > stageW || bX < 0){ bXS *= -1; } 
+		//Event Listener
+		window.document.onkeydown = jsPong.oKeyDown;
+		window.document.onkeyup = jsPong.oKeyUp;
+		jsPong.intMainLoop = setInterval(jsPong.fnLoop, 50);	
+		jsPong.fnStart();
+	}, /* fnInit() */
+
+
+	oKeyDown: function (e){
+		var ev = e ? e.keyCode : event.keyCode  
+		if(ev == 37){ jsPong.kLeft = true;	}
+			else if(ev == 39){ jsPong.kRight = true;	}
+			else if(ev == 80 || ev == 27){ //letter p, spacebar=32
+				if(jsPong.vIsPause === false) {
+					jsPong.vIsPause = true;
+					jsPong.p1.style['background'] = jsPong.p2.style['background'] = jsPong.b.style['background'] = 'gray';
+					getElementById('game_menu').style.visibility='visible';
+				}
+				else {
+					jsPong.vIsPause = false;
+					jsPong.p1.style['background'] = jsPong.p2.style['background'] = jsPong.b.style['background'] = 'white';
+					getElementById('game_menu').style.visibility='hidden';
+				}
+			}
+	}, /* oKeyDown()*/
+
+	oKeyUp: function (e){
+		jsPong.kLeft = false;
+		jsPong.kRight = false;
+	},
+
+	fnStart: function (){
+		//document.getElementById('ui').innerHTML = 'JAVASCRIPT PONG | YOU:' + fmt00(p1S) + ' COMPUTER:' + fmt00(p2S);
+		document.getElementById('p1s').innerHTML = jsPong.fmt00(jsPong.p1S);
+		document.getElementById('p2s').innerHTML = jsPong.fmt00(jsPong.p2S);
+		jsPong.bX = Math.random() *(jsPong.stageW - jsPong.grid);
+		jsPong.bY = jsPong.stageH / 2;
+		if(jsPong.p1S > jsPong.p2S) { 
+			jsPong.bXS = 3;
+			jsPong.bYS = 3;
+		} else { 
+			jsPong.bXS = -3;
+			jsPong.bYS = -3;
+		}
+	},
+
+
+	fnLoop: function (){
+		if(!jsPong.vIsPause){
+
+			//Someone scores
+			if(jsPong.bY > jsPong.stageH){ jsPong.p2S++; jsPong.fnStart(); }
+			if(jsPong.bY < 0){ jsPong.p1S++; jsPong.fnStart(); } 
 	
-	//Collision - Players
-	if((bY > p1Y-grid && bX > p1X && bX < p1X+pW)||(bY < grid && bX > p2X && bX < p2X+pW)){bYS *= -1.1; bXS *= 1.1;}
+			//Collision - Boundary 
+			if(jsPong.bX > jsPong.stageW || jsPong.bX < 0){ jsPong.bXS *= -1; } 
 	
-	//Move ball
-	bX+=bXS; bY+=bYS;	
-	b.style['left'] = bX + 'px';
-	b.style['top'] = bY + 'px';
+			//Collision - Players
+			if((jsPong.bY > jsPong.p1Y-jsPong.grid && jsPong.bX > jsPong.p1X && jsPong.bX < jsPong.p1X+jsPong.pW)||(jsPong.bY < jsPong.grid && jsPong.bX > jsPong.p2X && jsPong.bX < jsPong.p2X+jsPong.pW)){jsPong.bYS *= -1.1; jsPong.bXS *= 1.1;}
 	
-	//Move Player1
-	if(kLeft && p1X > 0){ p1X-=5; } else if (kRight && p1X+pW-grid < stageW){ p1X+=5;}
-	p1.style['left'] = p1X + 'px';
+			//Move ball
+			jsPong.bX+=jsPong.bXS; jsPong.bY+=jsPong.bYS;	
+			jsPong.b.style['left'] = jsPong.bX + 'px';
+			jsPong.b.style['top'] = jsPong.bY + 'px';
 	
-	//Move Player2
-	if(bX > p2X+pW){ p2X+=5; } else if(bX < p2X){ p2X-=5; }
-	p2.style['left'] = p2X + 'px';
-}
-}
+			//Move Player1
+			if(jsPong.kLeft && jsPong.p1X > 0){ jsPong.p1X-=5; } else if (jsPong.kRight && jsPong.p1X+jsPong.pW-jsPong.grid < jsPong.stageW){ jsPong.p1X+=5;}
+			jsPong.p1.style['left'] = jsPong.p1X + 'px';
+	
+			//Move Player2
+			if(jsPong.bX > jsPong.p2X+jsPong.pW){ jsPong.p2X+=5; } else if(jsPong.bX < jsPong.p2X){ jsPong.p2X-=5; }
+			jsPong.p2.style['left'] = jsPong.p2X + 'px';
+		}
+	}
+
+} /* End jsPong */
